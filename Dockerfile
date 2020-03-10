@@ -3,7 +3,7 @@ FROM php:7.4
 ARG BUILD_DATE
 ARG VCS_REF
 
-LABEL maintainer="Eduardo Bizarro <edbizarro@gmail.com>" \
+LABEL maintainer="cop right by erkhuy" \
   PHP="7.4" \
   NODE="12" \
   org.label-schema.name="edbizarro/gitlab-ci-pipeline-php" \
