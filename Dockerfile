@@ -1,50 +1,94 @@
-FROM php:7.4
+FROM php:7.4-alpine
 
-ARG BUILD_DATE
-ARG VCS_REF
+# Install dev dependencies
+RUN apk update
+RUN apk add --no-cache --virtual .build-deps \
+    $PHPIZE_DEPS \
+    curl-dev \
+    imagemagick-dev \
+    libtool \
+    libxml2-dev \
+    postgresql-dev \
+    sqlite-dev
 
-LABEL maintainer="cop right by erkhuy" \
-  PHP="7.4" \
-  NODE="12" \
-  org.label-schema.name="edbizarro/gitlab-ci-pipeline-php" \
-  org.label-schema.description=":coffee: Docker images for build and test PHP applications with Gitlab CI (or any other CI plataform!)" \
-  org.label-schema.build-date=$BUILD_DATE \
-  org.label-schema.schema-version="1.0" \
-  org.label-schema.vcs-url="https://github.com/edbizarro/gitlab-ci-pipeline-php" \
-  org.label-schema.vcs-ref=$VCS_REF
+# Install production dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    freetype-dev \
+    g++ \
+    gcc \
+    git \
+    imagemagick \
+    libc-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libzip-dev \
+    make \
+    mysql-client \
+    nodejs \
+    nodejs-npm \
+    yarn \
+    openssh-client \
+    postgresql-libs \
+    rsync \
+    zlib-dev
 
-# Set correct environment variables
-ENV IMAGE_USER=php
-ENV HOME=/home/$IMAGE_USER
-ENV COMPOSER_HOME=$HOME/.composer
-ENV PATH=$HOME/.yarn/bin:$PATH
-ENV GOSS_VERSION="0.3.8"
-ENV PHP_VERSION=7.4
+# Install PECL and PEAR extensions
+RUN pecl install \
+    imagick \
+    xdebug
 
-USER root
+# Enable PECL and PEAR extensions
+RUN docker-php-ext-enable \
+    imagick \
+    xdebug
 
-WORKDIR /tmp
+# Configure php extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
-# COPY INSTALL SCRIPTS
-COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
-COPY ./php/scripts/*.sh /tmp/
-RUN chmod +x /tmp/*.sh
+# Install php extensions
+RUN docker-php-ext-install \
+    bcmath \
+    calendar \
+    curl \
+    exif \
+    gd \
+    iconv \
+    pdo \
+    pdo_mysql \
+    pdo_pgsql \
+    pdo_sqlite \
+    pcntl \
+    tokenizer \
+    xml \
+    zip
 
-# Install2
-RUN bash ./packages.sh \
-  && bash ./extensions.sh \
-  && bash ./node.sh \
-  && adduser --disabled-password --gecos "" $IMAGE_USER && \
-  echo "PATH=$(yarn global bin):$PATH" >> /root/.profile && \
-  echo "PATH=$(yarn global bin):$PATH" >> /root/.bashrc && \
-  echo "$IMAGE_USER  ALL = ( ALL ) NOPASSWD: ALL" >> /etc/sudoers && \
-  mkdir -p /var/www/html \
-  && composer global require "hirak/prestissimo:^0.3"  \
-  && rm -rf ~/.composer/cache/* \
-  && chown -R $IMAGE_USER:$IMAGE_USER /var/www $HOME \
-  && curl -fsSL https://goss.rocks/install | GOSS_VER=v${GOSS_VERSION} sh \
-  && bash ./cleanup.sh
+# Install composer
+ENV COMPOSER_HOME /composer
+ENV PATH ./vendor/bin:/composer/vendor/bin:$PATH
+ENV COMPOSER_ALLOW_SUPERUSER 1
+RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
 
-USER $IMAGE_USER
+# Install PHP_CodeSniffer
+RUN composer global require "squizlabs/php_codesniffer=*"
 
+# Install Laravel Envoy 
+RUN composer global require laravel/envoy
+
+# Install PHPCS
+RUN composer global require "squizlabs/php_codesniffer=*"
+
+# Cleanup dev dependencies
+RUN apk del -f .build-deps
+
+# Install openssh
+RUN apk add --no-cache openssh \
+  && sed -i s/#PermitRootLogin.*/PermitRootLogin\ yes/ /etc/ssh/sshd_config \
+  && echo "root:root" | chpasswd
+
+# Install sshpass
+RUN apk add sshpass
+
+# Setup working directory
 WORKDIR /var/www/html
