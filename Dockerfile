@@ -87,6 +87,14 @@ RUN apk add --no-cache openssh \
   && sed -i s/#PermitRootLogin.*/PermitRootLogin\ yes/ /etc/ssh/sshd_config \
   && echo "root:root" | chpasswd
 
+
+# set php memory
+RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini &amp;&amp; \
+sed -i -e "s/^ *memory_limit.*/memory_limit = 512M" 
+-e "s/^ *max_execution_time.*/max_execution_time = 0/g" 
+/usr/local/etc/php/php.ini
+
+
 # Install sshpass
 RUN apk add sshpass
 
