@@ -89,8 +89,7 @@ RUN apk add --no-cache openssh \
 
 
 # set php memory
-RUN sed -E -i -e 's/max_execution_time = 30/max_execution_time = 120/' /etc/php.ini \
- && sed -E -i -e 's/memory_limit = 128M/memory_limit = 512M/' /etc/php.ini 
+RUN  echo 'memory_limit = 512M' >> /usr/local/etc/php/conf.d/docker-php-ext-memlimit.ini
 
 
 # Install sshpass
