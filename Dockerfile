@@ -89,10 +89,8 @@ RUN apk add --no-cache openssh \
 
 
 # set php memory
-RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini &amp;&amp; \
-sed -i -e "s/^ *memory_limit.*/memory_limit = 512M" 
--e "s/^ *max_execution_time.*/max_execution_time = 0/g" 
-/usr/local/etc/php/php.ini
+RUN sed -E -i -e 's/max_execution_time = 30/max_execution_time = 120/' /etc/php.ini \
+ && sed -E -i -e 's/memory_limit = 128M/memory_limit = 512M/' /etc/php.ini 
 
 
 # Install sshpass
