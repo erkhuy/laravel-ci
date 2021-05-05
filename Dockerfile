@@ -43,7 +43,9 @@ RUN pecl install \
 RUN docker-php-ext-enable \
     imagick \
     xdebug
-RUN docker-php-ext-enable xdebug
+RUN docker-php-ext-enable xdebug \
+&& echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini 
+
 
 # Configure php extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
