@@ -40,8 +40,11 @@ RUN pecl install \
     xdebug
 
 # Enable PECL and PEAR extensions
+RUN apt-get update && apt-get install -y libmagickwand-dev --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN printf "\n" | pecl install imagick
+RUN docker-php-ext-enable imagick
+
 RUN docker-php-ext-enable \
-    imagick \
     xdebug
 RUN docker-php-ext-enable xdebug \
 && echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini 
