@@ -44,10 +44,10 @@ RUN apt-get update && apt-get install -y libmagickwand-dev --no-install-recommen
 RUN printf "\n" | pecl install imagick
 RUN docker-php-ext-enable imagick
 
-RUN docker-php-ext-enable \
-    xdebug
-RUN docker-php-ext-enable xdebug \
-&& echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini 
+#RUN docker-php-ext-enable \
+ #   xdebug
+#RUN docker-php-ext-enable xdebug \
+#&& echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini 
 
 
 # Configure php extensions
@@ -77,7 +77,7 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 RUN curl -s https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer
 
 # Install PHP_CodeSniffer
-RUN composer global require "squizlabs/php_codesniffer=*"
+# RUN composer global require "squizlabs/php_codesniffer=*"
 
 # Install Laravel Envoy 
 RUN composer global require laravel/envoy
